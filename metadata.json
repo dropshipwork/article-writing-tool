@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Article Writing ",
+  "description": "A comprehensive automated tool for fetching trending topics, generating SEO-optimized articles, and auto-publishing to WordPress using Gemini 3.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
