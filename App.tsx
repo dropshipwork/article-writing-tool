@@ -329,10 +329,30 @@ const App: React.FC = () => {
     addLog(`Engine: Starting generation for "${topic}"...`);
     try {
       addLog(`Step 1/3: Generating human-like draft...`);
-      let data = try {
-  await generateArticle(...)
+
+let data;
+
+try {
+  data = await generateArticle(topic, intent, sessionGeminiKey);
+
+  if (!data || !data.content) {
+    throw new Error("Empty response from API");
+  }
+
 } catch (err) {
-  alert("Error generating article. Check API quota.");
+  console.error(err);
+
+  alert(
+    "❌ Failed to generate article.\n\nPossible reasons:\n" +
+    "• API quota exceeded\n" +
+    "• Invalid Gemini API key\n" +
+    "• Network error\n\n" +
+    "Please check your API key or try again later."
+  );
+
+  addLog("Article generation failed. Check API quota or key.", "error");
+  setIsLoading(false);
+  return; // VERY IMPORTANT → stop further steps
 }
       
       addLog(`Step 2/3: Running humanization and SEO audit...`);
