@@ -329,7 +329,11 @@ const App: React.FC = () => {
     addLog(`Engine: Starting generation for "${topic}"...`);
     try {
       addLog(`Step 1/3: Generating human-like draft...`);
-      let data = await generateArticle(topic, intent, sessionGeminiKey);
+      let data = try {
+  await generateArticle(...)
+} catch (err) {
+  alert("Error generating article. Check API quota.");
+}
       
       addLog(`Step 2/3: Running humanization and SEO audit...`);
       let audit = await auditAndRewrite(data.content || '', data.title || topic, data.keywords || [], sessionGeminiKey);
