@@ -11,14 +11,7 @@ import {
   Member,
   SystemConfig
 } from './types';
-import { 
-  fetchTrendingTopics, 
-  generateArticle, 
-  auditAndRewrite,
-  findKeywords,
-  generateBlogImage,
-  fetchSmartSuggestions
-} from './services/gemini';
+import { generateArticle } from "./services/gemini";
 import { publishToWordPress } from './services/wordpress';
 import { authApi } from './services/auth';
 import ArticleEditor from './components/ArticleEditor';
