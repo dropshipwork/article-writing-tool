@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { 
-  AppState, 
-  Trend, 
-  Article, 
+import {
+  AppState,
+  Trend,
+  Article,
   WordPressConfig,
   Keyword,
   COUNTRIES,
@@ -16,10 +15,10 @@ import { publishToWordPress } from './services/wordpress';
 import { authApi } from './services/auth';
 import ArticleEditor from './components/ArticleEditor';
 import AdminSection from './components/AdminSection';
-import { 
-  PenTool, 
-  Settings as SettingsIcon, 
-  TrendingUp, 
+import {
+  PenTool,
+  Settings as SettingsIcon,
+  TrendingUp,
   Search,
   AlertCircle,
   FileText,
@@ -59,12 +58,12 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(false);
-  const [logs, setLogs] = useState<{msg: string, time: string, type: 'info'|'success'|'error'}[]>([]);
-  
+  const [logs, setLogs] = useState<{ msg: string, time: string, type: 'info' | 'success' | 'error' }[]>([]);
+
   // Date Range State
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  
+
   // Auth & Admin State
   const [isAccessGranted, setIsAccessGranted] = useState(false);
   const [currentUser, setCurrentUser] = useState<Member | null>(null);
@@ -114,7 +113,7 @@ const App: React.FC = () => {
       setIsMobile(mobile);
       if (!mobile) setIsSidebarOpen(true);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -168,7 +167,7 @@ const App: React.FC = () => {
       alert("Please enter a valid Gemini API Key.");
       return;
     }
-    
+
     if (currentUser) {
       const success = await authApi.updateMemberGeminiKey(currentUser.id, tempGeminiKey);
       if (success) {
@@ -213,7 +212,7 @@ const App: React.FC = () => {
       addLog(`Auto-refresh enabled. Syncing every 5 minutes...`, 'info');
       refreshIntervalRef.current = window.setInterval(() => {
         handleFetchTrends();
-      }, 300000); 
+      }, 300000);
     } else {
       if (refreshIntervalRef.current) clearInterval(refreshIntervalRef.current);
     }
@@ -222,7 +221,7 @@ const App: React.FC = () => {
     };
   }, [autoRefresh, isAccessGranted]);
 
-  const addLog = useCallback((msg: string, type: 'info'|'success'|'error' = 'info') => {
+  const addLog = useCallback((msg: string, type: 'info' | 'success' | 'error' = 'info') => {
     setLogs(prev => [{ msg, type, time: new Date().toLocaleTimeString() }, ...prev]);
   }, []);
 
@@ -330,37 +329,37 @@ const App: React.FC = () => {
     try {
       addLog(`Step 1/3: Generating human-like draft...`);
 
-let data;
+      let data;
 
-try {
-  data = await generateArticle(topic, intent, sessionGeminiKey);
+      try {
+        data = await generateArticle(topic, intent, sessionGeminiKey);
 
-  if (!data || !data.content) {
-    throw new Error("Empty response from API");
-  }
+        if (!data || !data.content) {
+          throw new Error("Empty response from API");
+        }
 
-} catch (err) {
-  console.error(err);
+      } catch (err) {
+        console.error(err);
 
-  alert(
-    "❌ Failed to generate article.\n\nPossible reasons:\n" +
-    "• API quota exceeded\n" +
-    "• Invalid Gemini API key\n" +
-    "• Network error\n\n" +
-    "Please check your API key or try again later."
-  );
+        alert(
+          "❌ Failed to generate article.\n\nPossible reasons:\n" +
+          "• API quota exceeded\n" +
+          "• Invalid Gemini API key\n" +
+          "• Network error\n\n" +
+          "Please check your API key or try again later."
+        );
 
-  addLog("Article generation failed. Check API quota or key.", "error");
-  setIsLoading(false);
-  return; // VERY IMPORTANT → stop further steps
-}
-      
+        addLog("Article generation failed. Check API quota or key.", "error");
+        setIsLoading(false);
+        return; // VERY IMPORTANT → stop further steps
+      }
+
       addLog(`Step 2/3: Running humanization and SEO audit...`);
       let audit = await auditAndRewrite(data.content || '', data.title || topic, data.keywords || [], sessionGeminiKey);
-      
+
       addLog(`Step 3/3: Generating professional featured image...`);
       const imageUrl = await generateBlogImage(topic, sessionGeminiKey);
-      
+
       const newArticle: Article = {
         id: Math.random().toString(36).substr(2, 9),
         title: data.title || topic,
@@ -401,7 +400,7 @@ try {
       setActiveTab(AppState.SETTINGS);
       return;
     }
-    
+
     setIsPublishing(true);
     const action = article.scheduledAt ? 'Scheduling' : 'Publishing';
     addLog(`${action} "${article.title}" to WordPress...`);
@@ -457,8 +456,8 @@ try {
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-white mb-3 tracking-tighter uppercase italic">Protected Studio</h1>
             <p className="text-slate-400 text-[10px] sm:text-sm font-medium mb-8 sm:mb-10 leading-relaxed px-2">This SaaS instance is in Private Mode. Please enter your member access key to proceed.</p>
-            
-            <input 
+
+            <input
               type="password"
               className="w-full px-6 sm:px-8 py-4 sm:py-5 bg-slate-800/50 border border-slate-700 rounded-2xl text-white font-bold focus:ring-4 focus:ring-blue-500/20 focus:outline-none mb-4 sm:mb-6 text-center tracking-widest placeholder:tracking-normal placeholder:font-normal text-sm sm:text-base"
               placeholder="Enter Access Key..."
@@ -466,8 +465,8 @@ try {
               onChange={(e) => setEnteredKey(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAccessCheck()}
             />
-            
-            <button 
+
+            <button
               onClick={handleAccessCheck}
               className="w-full py-4 sm:py-5 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-700 transition-all shadow-xl shadow-blue-900/40 uppercase tracking-widest text-xs sm:text-sm"
             >
@@ -485,7 +484,7 @@ try {
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 sm:p-6 overflow-y-auto relative">
         <div className="absolute -top-24 -right-24 w-64 sm:w-96 h-64 sm:h-96 bg-blue-600/10 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-24 -left-24 w-64 sm:w-96 h-64 sm:h-96 bg-indigo-600/10 rounded-full blur-3xl"></div>
-        
+
         <div className="max-w-lg w-full bg-slate-900/80 backdrop-blur-xl rounded-[2.5rem] sm:rounded-[3rem] p-6 sm:p-16 border border-white/5 shadow-2xl animate-in zoom-in-95 relative z-10 my-8">
           <div className="flex flex-col items-center text-center">
             <div className="bg-gradient-to-tr from-blue-600 to-indigo-600 p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] text-white mb-8 sm:mb-10 shadow-2xl shadow-blue-500/20 border border-white/10">
@@ -493,13 +492,13 @@ try {
             </div>
             <h1 className="text-2xl sm:text-4xl font-black text-white mb-3 sm:mb-4 tracking-tighter uppercase italic">Engine Activation</h1>
             <p className="text-slate-400 text-sm sm:text-lg font-medium mb-8 sm:mb-12 leading-relaxed px-2">
-              To use the AutoStudio tools, you must connect your own <span className="text-blue-400 font-bold">Google Gemini API Key</span>. 
+              To use the AutoStudio tools, you must connect your own <span className="text-blue-400 font-bold">Google Gemini API Key</span>.
             </p>
-            
+
             <div className="w-full space-y-4 sm:space-y-6">
               <div className="relative">
                 <ShieldCheck className="absolute left-5 sm:left-6 top-1/2 -translate-y-1/2 text-slate-500 w-5 h-5 sm:w-6 sm:h-6" />
-                <input 
+                <input
                   type="password"
                   className="w-full pl-12 sm:pl-16 pr-6 sm:pr-8 py-4 sm:py-6 bg-slate-800/50 border border-slate-700 rounded-2xl text-white font-bold focus:ring-4 focus:ring-blue-500/20 focus:outline-none placeholder:font-normal text-sm sm:text-base"
                   placeholder="Enter Gemini API Key..."
@@ -508,18 +507,18 @@ try {
                   onKeyDown={(e) => e.key === 'Enter' && handleUpdateGeminiKey()}
                 />
               </div>
-              
-              <button 
+
+              <button
                 onClick={handleUpdateGeminiKey}
                 className="w-full py-4 sm:py-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black rounded-2xl hover:from-blue-500 hover:to-indigo-500 transition-all shadow-2xl shadow-blue-900/40 uppercase tracking-[0.15em] sm:tracking-[0.2em] text-xs sm:text-sm border border-white/10"
               >
                 Activate Studio
               </button>
-              
+
               <div className="pt-4 sm:pt-6 flex flex-col items-center gap-3 sm:gap-4">
-                <a 
-                  href="https://ai.google.dev/" 
-                  target="_blank" 
+                <a
+                  href="https://ai.google.dev/"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="text-[10px] sm:text-xs font-bold text-blue-400 hover:text-blue-300 flex items-center gap-2 transition-colors"
                 >
@@ -538,7 +537,7 @@ try {
     <div className="flex min-h-screen bg-slate-50 selection:bg-blue-100 font-sans relative">
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && isMobile && (
-        <div 
+        <div
           className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[60] transition-opacity"
           onClick={() => setIsSidebarOpen(false)}
         ></div>
@@ -572,9 +571,8 @@ try {
                 setActiveTab(item.id);
                 if (isMobile) setIsSidebarOpen(false);
               }}
-              className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all ${
-                activeTab === item.id ? 'bg-blue-600 text-white shadow-xl shadow-blue-900/50 translate-x-2' : 'hover:bg-slate-800 hover:text-white'
-              }`}
+              className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all ${activeTab === item.id ? 'bg-blue-600 text-white shadow-xl shadow-blue-900/50 translate-x-2' : 'hover:bg-slate-800 hover:text-white'
+                }`}
             >
               <item.icon size={22} />
               {(isSidebarOpen || !isMobile) && <span className="font-bold">{item.label}</span>}
@@ -583,7 +581,7 @@ try {
         </nav>
 
         <div className="p-5 mt-auto border-t border-slate-800">
-          <button 
+          <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className="w-full flex items-center justify-center p-4 rounded-2xl hover:bg-slate-800 transition-all bg-slate-900 border border-slate-800"
           >
@@ -596,7 +594,7 @@ try {
       <main className="flex-1 overflow-y-auto w-full min-w-0">
         <header className="sticky top-0 z-40 bg-white/70 backdrop-blur-2xl border-b border-slate-200 px-6 lg:px-10 py-4 lg:py-6 flex justify-between items-center shadow-sm">
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={() => setIsSidebarOpen(true)}
               className="lg:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-xl"
             >
@@ -609,19 +607,19 @@ try {
             <p className="text-[10px] text-slate-400 font-black hidden md:block tracking-widest uppercase">Content OS</p>
           </div>
           <div className="flex items-center gap-3 lg:gap-6">
-             <div className="flex items-center gap-3 text-[9px] lg:text-[10px] font-black px-3 lg:px-4 py-2 bg-green-500/5 text-green-600 rounded-xl border border-green-500/10 uppercase tracking-widest shadow-sm">
+            <div className="flex items-center gap-3 text-[9px] lg:text-[10px] font-black px-3 lg:px-4 py-2 bg-green-500/5 text-green-600 rounded-xl border border-green-500/10 uppercase tracking-widest shadow-sm">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
               <span className="hidden xs:inline">Engines: Gemini 3</span>
               <span className="xs:hidden">G3</span>
             </div>
             {systemConfig.isPrivateMode && (
-              <button 
+              <button
                 onClick={() => {
                   setIsAccessGranted(false);
                   setCurrentUser(null);
                   setSessionGeminiKey('');
                   setTempGeminiKey('');
-                }} 
+                }}
                 className="text-[10px] font-black text-slate-400 hover:text-red-500 uppercase flex items-center gap-2 px-2 lg:px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg"
               >
                 <Lock size={12} /> <span className="hidden sm:inline">Logout</span>
@@ -675,7 +673,7 @@ try {
 
               <div className="bg-white p-12 rounded-[3rem] shadow-sm border border-slate-200 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-8 opacity-5">
-                   <TrendingUp size={200} />
+                  <TrendingUp size={200} />
                 </div>
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 mb-10">
                   <div className="max-w-xl">
@@ -685,8 +683,8 @@ try {
                   <div className="flex flex-wrap items-center gap-4 relative z-10">
                     <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-2xl border border-slate-200 shadow-inner">
                       <MapPin size={16} className="text-slate-400 ml-2" />
-                      <select 
-                        value={country} 
+                      <select
+                        value={country}
                         onChange={handleRegionChange}
                         className="bg-transparent border-none rounded-xl px-4 py-2 text-sm font-bold text-slate-700 focus:outline-none cursor-pointer"
                       >
@@ -695,8 +693,8 @@ try {
                     </div>
                     <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-2xl border border-slate-200 shadow-inner">
                       <LayoutGrid size={16} className="text-slate-400 ml-2" />
-                      <select 
-                        value={category} 
+                      <select
+                        value={category}
                         onChange={handleCategoryChange}
                         className="bg-transparent border-none rounded-xl px-4 py-2 text-sm font-bold text-slate-700 focus:outline-none cursor-pointer"
                       >
@@ -705,11 +703,11 @@ try {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex flex-col md:flex-row gap-5 relative z-10">
                   <div className="flex-1 relative">
                     <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" size={24} />
-                    <input 
+                    <input
                       type="text"
                       className="w-full pl-16 pr-8 py-6 bg-slate-50 border border-slate-200 rounded-[2rem] focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 focus:outline-none transition-all text-xl font-bold placeholder:font-medium shadow-inner"
                       placeholder="Enter your niche or keyword (e.g. Health, Finance)..."
@@ -768,10 +766,10 @@ try {
               {/* Smart Suggestions Section */}
               <div className="bg-slate-950 p-12 rounded-[3rem] shadow-2xl border border-white/5 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-8 opacity-10">
-                   <Zap size={200} className="text-blue-500" />
+                  <Zap size={200} className="text-blue-500" />
                 </div>
                 <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl"></div>
-                
+
                 <div className="relative z-10">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                     <div>
@@ -780,11 +778,11 @@ try {
                       </h2>
                       <p className="text-slate-400 text-xl font-medium max-w-2xl">Rising low-competition topics identified by our neural engine across global markets.</p>
                     </div>
-                    
+
                     <div className="flex flex-wrap items-center gap-4">
                       <div className="flex items-center gap-2 p-2 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-md">
                         <LayoutGrid size={16} className="text-blue-400 ml-2" />
-                        <select 
+                        <select
                           className="bg-transparent border-none rounded-xl px-4 py-2 text-sm font-bold text-white focus:outline-none cursor-pointer"
                           value={niche}
                           onChange={(e) => setNiche(e.target.value)}
@@ -797,7 +795,7 @@ try {
 
                       <div className="flex items-center gap-2 p-2 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-md">
                         <MapPin size={16} className="text-blue-400 ml-2" />
-                        <select 
+                        <select
                           className="bg-transparent border-none rounded-xl px-4 py-2 text-sm font-bold text-white focus:outline-none cursor-pointer"
                           value={country}
                           onChange={(e) => setCountry(e.target.value)}
@@ -808,7 +806,7 @@ try {
                         </select>
                       </div>
 
-                      <button 
+                      <button
                         onClick={handleFetchSuggestions}
                         disabled={isSuggesting}
                         className="px-10 py-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black rounded-[2rem] hover:from-blue-500 hover:to-indigo-500 transition-all shadow-2xl shadow-blue-500/20 flex items-center gap-3 disabled:opacity-50 active:scale-95 border border-white/10"
@@ -824,7 +822,7 @@ try {
                       {suggestedTopics.map((item, i) => (
                         <div key={i} className="bg-white/5 backdrop-blur-2xl border border-white/10 p-8 rounded-[3rem] hover:bg-white/10 hover:border-blue-500/50 hover:shadow-[0_20px_60px_rgba(59,130,246,0.2)] transition-all duration-500 group flex flex-col relative overflow-hidden">
                           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                          
+
                           <div className="flex justify-between items-start mb-6">
                             <div className="flex items-center gap-2 px-4 py-1.5 bg-blue-500/20 rounded-full border border-blue-500/30">
                               <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-ping"></div>
@@ -835,13 +833,13 @@ try {
                           </div>
 
                           <h3 className="text-2xl font-black text-white mb-4 group-hover:text-blue-400 transition-colors leading-tight tracking-tight">{item.topic}</h3>
-                          
+
                           <div className="bg-white/5 rounded-2xl p-6 mb-6 border border-white/5 group-hover:bg-white/10 transition-colors">
                             <p className="text-sm text-slate-300 leading-relaxed line-clamp-4 font-medium italic">
                               "{item.reason}"
                             </p>
                           </div>
-                          
+
                           <div className="flex flex-wrap gap-2 mb-8">
                             {item.keywords?.map((kw, ki) => (
                               <span key={ki} className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black text-blue-200 uppercase tracking-wider group-hover:border-blue-500/30 transition-all">
@@ -850,7 +848,7 @@ try {
                             ))}
                           </div>
 
-                          <button 
+                          <button
                             onClick={() => handleWriteArticle(item.topic)}
                             className="mt-auto w-full py-5 bg-blue-600 text-white font-black rounded-2xl text-xs uppercase tracking-[0.2em] hover:bg-blue-500 hover:shadow-lg hover:shadow-blue-500/40 transition-all active:scale-95 border border-white/10"
                           >
@@ -883,8 +881,8 @@ try {
                 <div className="flex flex-wrap gap-3">
                   {keywords.length > 0 ? (
                     keywords.map((kw, i) => (
-                      <button 
-                        key={i} 
+                      <button
+                        key={i}
                         onClick={() => handleWriteArticle(kw.phrase)}
                         className="px-6 py-3 bg-slate-50 border border-slate-200 rounded-xl hover:bg-blue-50 hover:border-blue-200 transition-all group"
                       >
@@ -896,8 +894,8 @@ try {
                     ))
                   ) : suggestedTopics.length > 0 ? (
                     suggestedTopics.flatMap(t => t.keywords).filter((v, i, a) => a.indexOf(v) === i).map((kw, i) => (
-                      <button 
-                        key={i} 
+                      <button
+                        key={i}
                         onClick={() => handleWriteArticle(kw)}
                         className="px-6 py-3 bg-slate-50 border border-slate-200 rounded-xl hover:bg-blue-50 hover:border-blue-200 transition-all group"
                       >
@@ -921,12 +919,12 @@ try {
             <div className="space-y-10">
               <div className="bg-white p-12 rounded-[3rem] shadow-sm border border-slate-200">
                 <h2 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">Keyword Engine</h2>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">Start Date</label>
-                    <input 
-                      type="date" 
+                    <input
+                      type="date"
                       className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
@@ -934,8 +932,8 @@ try {
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4">End Date</label>
-                    <input 
-                      type="date" 
+                    <input
+                      type="date"
                       className="w-full px-6 py-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
@@ -944,7 +942,7 @@ try {
                 </div>
 
                 <div className="flex flex-col md:flex-row gap-5">
-                  <input 
+                  <input
                     type="text"
                     className="flex-1 px-8 py-6 bg-slate-50 border border-slate-200 rounded-[2rem] focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:outline-none transition-all text-xl font-bold shadow-inner"
                     placeholder="Enter seed keyword (e.g. cloud computing)..."
@@ -985,7 +983,7 @@ try {
 
           {activeTab === AppState.WRITER && (
             <div className="animate-in slide-in-from-bottom-6 duration-500">
-               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
                 <div>
                   <h2 className="text-4xl font-black text-slate-900 tracking-tight">Article studio</h2>
                   <p className="text-slate-500 text-lg font-medium mt-2">Professional humanized editor with live plagiarism auditing.</p>
@@ -1000,8 +998,8 @@ try {
               ) : (
                 <div className="space-y-12">
                   {articles.map(article => (
-                    <ArticleEditor 
-                      key={article.id} article={article} onUpdate={updateArticle} onPublish={handlePublish} onDelete={deleteArticle} isPublishing={isPublishing} 
+                    <ArticleEditor
+                      key={article.id} article={article} onUpdate={updateArticle} onPublish={handlePublish} onDelete={deleteArticle} isPublishing={isPublishing}
                     />
                   ))}
                 </div>
@@ -1011,7 +1009,7 @@ try {
 
           {activeTab === AppState.LOGS && (
             <div className="bg-slate-950 rounded-[3rem] shadow-2xl overflow-hidden border border-slate-900">
-               <div className="p-10 border-b border-slate-900 flex justify-between items-center bg-slate-950/80 backdrop-blur-xl">
+              <div className="p-10 border-b border-slate-900 flex justify-between items-center bg-slate-950/80 backdrop-blur-xl">
                 <h2 className="text-xl font-black text-white flex items-center gap-4"><Clock size={24} className="text-emerald-500" /> SYSTEM ACTIVITY MONITOR</h2>
                 <button onClick={() => setLogs([])} className="text-[10px] text-slate-600 hover:text-white uppercase tracking-[0.25em] font-black border border-slate-900 px-6 py-3 rounded-2xl">Wipe History</button>
               </div>
@@ -1033,23 +1031,23 @@ try {
                 <div className="max-w-4xl">
                   <h2 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">Gemini API Configuration</h2>
                   <p className="text-slate-500 text-lg font-medium mb-10">Connect your personal Gemini API key to power the content engine.</p>
-                  
+
                   <div className="space-y-6">
                     <div className="space-y-3">
                       <label className="text-xs font-black text-slate-400 uppercase tracking-[0.25em] ml-2">Personal API Key</label>
                       <div className="relative">
                         <Zap size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input 
-                          type="password" 
-                          className="w-full pl-16 pr-8 py-6 bg-slate-50 border border-slate-200 rounded-[2rem] font-bold text-slate-800 focus:ring-4 focus:ring-emerald-500/10 focus:outline-none" 
-                          placeholder="Enter your Gemini API Key..." 
-                          value={tempGeminiKey} 
-                          onChange={(e) => setTempGeminiKey(e.target.value)} 
+                        <input
+                          type="password"
+                          className="w-full pl-16 pr-8 py-6 bg-slate-50 border border-slate-200 rounded-[2rem] font-bold text-slate-800 focus:ring-4 focus:ring-emerald-500/10 focus:outline-none"
+                          placeholder="Enter your Gemini API Key..."
+                          value={tempGeminiKey}
+                          onChange={(e) => setTempGeminiKey(e.target.value)}
                         />
                       </div>
                       <p className="text-[10px] text-slate-400 ml-4">Get your key from <a href="https://ai.google.dev/" target="_blank" className="text-emerald-500 hover:underline">Google AI Studio</a>. It's free for most users.</p>
                     </div>
-                    
+
                     <div className="pt-6 flex items-center justify-between border-t border-slate-100">
                       <div className={`text-xs font-black uppercase tracking-widest ${sessionGeminiKey ? 'text-green-600' : 'text-amber-600'}`}>
                         {sessionGeminiKey ? '✓ KEY CONNECTED' : '⚠ KEY REQUIRED'}
@@ -1095,10 +1093,10 @@ try {
           )}
 
           {activeTab === AppState.ADMIN && (
-            <AdminSection 
-              members={members} 
-              onUpdateMembers={setMembers} 
-              config={systemConfig} 
+            <AdminSection
+              members={members}
+              onUpdateMembers={setMembers}
+              config={systemConfig}
               onUpdateConfig={setSystemConfig}
               addLog={addLog}
             />
